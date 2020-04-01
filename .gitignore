@@ -37,3 +37,7 @@
 
 # cmake debug
 cmake-build-debug-*/
+cmake-build-debug/
+
+# vs code
+.vscode/
