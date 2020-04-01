@@ -16,6 +16,28 @@
 
 using namespace cuber;
 
+FileUtil::FileStat::FileStat(const char *filename)
+        : exists_(stat(filename, &stat_) >= 0) {
+}
+
+bool FileUtil::FileStat::exists() {
+    return exists_;
+}
+
+bool FileUtil::FileStat::isfile() {
+    if (!exists_) return false;
+    return S_ISREG(stat_.st_mode);
+}
+
+bool FileUtil::FileStat::isdir() {
+    if (!exists_) return false;
+    return S_ISDIR(stat_.st_mode);
+}
+
+int64_t FileUtil::FileStat::size() {
+    return stat_.st_size;
+}
+
 FileUtil::AppendFile::AppendFile(StringArg filename)
         : fp_(::fopen(filename.c_str(), "ae")),  // 'e' for O_CLOEXEC
           writtenBytes_(0) {

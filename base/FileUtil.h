@@ -19,6 +19,21 @@ namespace cuber
 namespace FileUtil
 {
 
+class FileStat
+{
+private:
+  struct stat stat_;
+  bool exists_;
+public:
+  explicit FileStat(const char* filename);
+  ~FileStat() = default;
+  bool exists();
+  bool isfile();
+  bool isdir();
+  int64_t size();
+};
+
+
 // read small file < 64KB
 class ReadSmallFile : noncopyable
 {
