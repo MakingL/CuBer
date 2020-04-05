@@ -30,12 +30,21 @@ class Connector : noncopyable,
 {
  public:
   typedef std::function<void (int sockfd)> NewConnectionCallback;
+  typedef std::function<void(const InetAddress& serverAddr)> ConnectFailCallback;
 
   Connector(EventLoop* loop, const InetAddress& serverAddr);
   ~Connector();
 
   void setNewConnectionCallback(const NewConnectionCallback& cb)
   { newConnectionCallback_ = cb; }
+
+  void setConnectFailCallback(const ConnectFailCallback& cb)
+  { connectFailCallback_ = cb; }
+
+  void setMaxRetry(int retryTime)
+  { maxRetry_ = retryTime; }
+
+  int maxRetry() const { return maxRetry_; }
 
   void start();  // can be called in any thread
   void restart();  // must be called in loop thread
@@ -64,8 +73,10 @@ class Connector : noncopyable,
   bool connect_; // atomic
   States state_;  // FIXME: use atomic variable
   std::unique_ptr<Channel> channel_;
+  ConnectFailCallback connectFailCallback_;
   NewConnectionCallback newConnectionCallback_;
   int retryDelayMs_;
+  int maxRetry_;
 };
 
 }  // namespace net

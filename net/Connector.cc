@@ -21,12 +21,19 @@ using namespace cuber::net;
 
 const int Connector::kMaxRetryDelayMs;
 
+void cuber::net::defaultConnectFailCallback(const InetAddress& serverAddr)
+{
+    LOG_DEBUG << "Connect to " << serverAddr.toIpPort() << " failed";
+}
+
 Connector::Connector(EventLoop* loop, const InetAddress& serverAddr)
   : loop_(loop),
     serverAddr_(serverAddr),
     connect_(false),
     state_(kDisconnected),
-    retryDelayMs_(kInitRetryDelayMs)
+    connectFailCallback_(defaultConnectFailCallback),
+    retryDelayMs_(kInitRetryDelayMs),
+    maxRetry_(-1)
 {
   LOG_DEBUG << "ctor[" << this << "]";
 }
@@ -212,11 +219,19 @@ void Connector::retry(int sockfd)
   setState(kDisconnected);
   if (connect_)
   {
+      if (maxRetry_ == 0) {
+          stop();
+          connectFailCallback_(serverAddr_);
+          return;
+      }
     LOG_INFO << "Connector::retry - Retry connecting to " << serverAddr_.toIpPort()
              << " in " << retryDelayMs_ << " milliseconds. ";
     loop_->runAfter(retryDelayMs_/1000.0,
                     std::bind(&Connector::startInLoop, shared_from_this()));
     retryDelayMs_ = std::min(retryDelayMs_ * 2, kMaxRetryDelayMs);
+    if (maxRetry_ > 0) {
+        --maxRetry_;
+    }
   }
   else
   {
