@@ -47,25 +47,33 @@ void removeConnector(const ConnectorPtr& connector)
   //connector->
 }
 
+void defaultConnectionCloseCallback(const TcpConnectionPtr& conn)
+{
+    LOG_TRACE << conn->localAddress().toIpPort() << " -> "
+              << conn->peerAddress().toIpPort() << " closed ";
+}
+
 }  // namespace detail
 }  // namespace net
 }  // namespace cuber
 
 TcpClient::TcpClient(EventLoop* loop,
                      const InetAddress& serverAddr,
-                     const string& nameArg)
+                     const string& nameArg, int maxRetry)
   : loop_(CHECK_NOTNULL(loop)),
     connector_(new Connector(loop, serverAddr)),
     name_(nameArg),
     connectionCallback_(defaultConnectionCallback),
     messageCallback_(defaultMessageCallback),
+    connectionCloseCallback_(detail::defaultConnectionCloseCallback),
+    retryTimes_(maxRetry),
     retry_(false),
     connect_(true),
     nextConnId_(1)
 {
   connector_->setNewConnectionCallback(
       std::bind(&TcpClient::newConnection, this, _1));
-  // FIXME setConnectFailedCallback
+  connector_->setMaxRetry(retryTimes_);
   LOG_INFO << "TcpClient::TcpClient[" << name_
            << "] - connector " << get_pointer(connector_);
 }
@@ -164,6 +172,8 @@ void TcpClient::removeConnection(const TcpConnectionPtr& conn)
   loop_->assertInLoopThread();
   assert(loop_ == conn->getLoop());
 
+  connectionCloseCallback_(conn);
+
   {
     MutexLockGuard lock(mutex_);
     assert(connection_ == conn);
@@ -177,5 +187,14 @@ void TcpClient::removeConnection(const TcpConnectionPtr& conn)
              << connector_->serverAddress().toIpPort();
     connector_->restart();
   }
+}
+
+void TcpClient::setMaxRetryTimes(int retryTime) {
+    retryTimes_ = retryTime;
+    connector_->setMaxRetry(retryTime);
+}
+
+void TcpClient::setConnectFailCallback(const ConnectFailCallback &cb) {
+    connector_->setConnectFailCallback(cb);
 }
 

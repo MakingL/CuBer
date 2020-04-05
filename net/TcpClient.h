@@ -29,7 +29,8 @@ class TcpClient : noncopyable
   // TcpClient(EventLoop* loop, const string& host, uint16_t port);
   TcpClient(EventLoop* loop,
             const InetAddress& serverAddr,
-            const string& nameArg);
+            const string& nameArg,
+            int maxRetry=3);
   ~TcpClient();  // force out-line dtor, for std::unique_ptr members.
 
   void connect();
@@ -43,11 +44,19 @@ class TcpClient : noncopyable
   }
 
   EventLoop* getLoop() const { return loop_; }
+
+  int maxRetryTimes() const { return retryTimes_; }
+
+  void setMaxRetryTimes(int retryTime);
+
   bool retry() const { return retry_; }
   void enableRetry() { retry_ = true; }
+  const string &name() const { return name_; }
 
-  const string& name() const
-  { return name_; }
+  void setConnectFailCallback(const ConnectFailCallback &cb);
+
+  void setCloseCallback(const CloseCallback &cb)
+  { connectionCloseCallback_ = cb; }
 
   /// Set connection callback.
   /// Not thread safe.
@@ -76,6 +85,8 @@ class TcpClient : noncopyable
   ConnectionCallback connectionCallback_;
   MessageCallback messageCallback_;
   WriteCompleteCallback writeCompleteCallback_;
+  CloseCallback connectionCloseCallback_;
+  int retryTimes_;
   bool retry_;   // atomic
   bool connect_; // atomic
   // always in loop thread
