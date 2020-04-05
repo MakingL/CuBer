@@ -23,7 +23,7 @@ const int Connector::kMaxRetryDelayMs;
 
 void cuber::net::defaultConnectFailCallback(const InetAddress& serverAddr)
 {
-    LOG_DEBUG << "Connect to " << serverAddr.toIpPort() << " failed";
+    LOG_INFO << "Connect to " << serverAddr.toIpPort() << " failed";
 }
 
 Connector::Connector(EventLoop* loop, const InetAddress& serverAddr)
