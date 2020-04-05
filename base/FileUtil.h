@@ -25,11 +25,16 @@ private:
   struct stat stat_;
   bool exists_;
 public:
+    explicit FileStat() : exists_(false) {
+    }
   explicit FileStat(const char* filename);
   ~FileStat() = default;
   bool exists();
+  void setFileName(const char *filename);
   bool isfile();
+  bool isfile(const char* filename);
   bool isdir();
+  bool isdir(const char *dirname);
   int64_t size();
 };
 

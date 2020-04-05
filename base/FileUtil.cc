@@ -38,6 +38,26 @@ int64_t FileUtil::FileStat::size() {
     return stat_.st_size;
 }
 
+void FileUtil::FileStat::setFileName(const char *filename) {
+    exists_ = stat(filename, &stat_) >= 0;
+}
+
+bool FileUtil::FileStat::isfile(const char *filename) {
+    struct stat file_stat;
+    if (stat(filename, &file_stat) < 0) {
+        return false;
+    }
+    return S_ISREG(file_stat.st_mode);
+}
+
+bool FileUtil::FileStat::isdir(const char *dir) {
+    struct stat file_stat;
+    if (stat(dir, &file_stat) < 0) {
+        return false;
+    }
+    return S_ISDIR(file_stat.st_mode);
+}
+
 FileUtil::AppendFile::AppendFile(StringArg filename)
         : fp_(::fopen(filename.c_str(), "ae")),  // 'e' for O_CLOEXEC
           writtenBytes_(0) {
