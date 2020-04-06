@@ -53,8 +53,6 @@ class TcpClient : noncopyable
   void enableRetry() { retry_ = true; }
   const string &name() const { return name_; }
 
-  void setConnectFailCallback(const ConnectFailCallback &cb);
-
   void setCloseCallback(const CloseCallback &cb)
   { connectionCloseCallback_ = cb; }
 
@@ -73,11 +71,21 @@ class TcpClient : noncopyable
   void setWriteCompleteCallback(WriteCompleteCallback cb)
   { writeCompleteCallback_ = std::move(cb); }
 
+  typedef std::function<void (const std::string& clientName, const InetAddress& peerAddr)> TCPClientConnectFailCallback;
+
+  void setConnectFailCallback(TCPClientConnectFailCallback cb)
+  { connectFailCallback_ = std::move(cb); }
+
+  void defaultTCPClientConnectFailCallback(const std::string &clientName, const InetAddress &peerAddr);
  private:
   /// Not thread safe, but in loop
   void newConnection(int sockfd);
   /// Not thread safe, but in loop
   void removeConnection(const TcpConnectionPtr& conn);
+
+  void onConnectFailed(const InetAddress & peerAddr) {
+      connectFailCallback_(name_, peerAddr);
+  }
 
   EventLoop* loop_;
   ConnectorPtr connector_; // avoid revealing Connector
@@ -86,6 +94,7 @@ class TcpClient : noncopyable
   MessageCallback messageCallback_;
   WriteCompleteCallback writeCompleteCallback_;
   CloseCallback connectionCloseCallback_;
+  TCPClientConnectFailCallback connectFailCallback_;
   int retryTimes_;
   bool retry_;   // atomic
   bool connect_; // atomic

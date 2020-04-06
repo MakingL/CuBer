@@ -57,6 +57,14 @@ void defaultConnectionCloseCallback(const TcpConnectionPtr& conn)
 }  // namespace net
 }  // namespace cuber
 
+namespace cuber {
+namespace net {
+    void defaultTCPClientConnectFailCallback(const std::string &clientName, const InetAddress &peerAddr) {
+        LOG_TRACE << clientName << " cannot connect to " << peerAddr.toIpPort();
+    }
+}
+}
+
 TcpClient::TcpClient(EventLoop* loop,
                      const InetAddress& serverAddr,
                      const string& nameArg, int maxRetry)
@@ -66,6 +74,7 @@ TcpClient::TcpClient(EventLoop* loop,
     connectionCallback_(defaultConnectionCallback),
     messageCallback_(defaultMessageCallback),
     connectionCloseCallback_(detail::defaultConnectionCloseCallback),
+    connectFailCallback_(std::bind(&TcpClient::defaultTCPClientConnectFailCallback, this, _1, _2)),
     retryTimes_(maxRetry),
     retry_(false),
     connect_(true),
@@ -74,6 +83,7 @@ TcpClient::TcpClient(EventLoop* loop,
   connector_->setNewConnectionCallback(
       std::bind(&TcpClient::newConnection, this, _1));
   connector_->setMaxRetry(retryTimes_);
+  connector_->setConnectFailCallback(std::bind(&TcpClient::onConnectFailed, this, _1));
   LOG_INFO << "TcpClient::TcpClient[" << name_
            << "] - connector " << get_pointer(connector_);
 }
@@ -194,7 +204,7 @@ void TcpClient::setMaxRetryTimes(int retryTime) {
     connector_->setMaxRetry(retryTime);
 }
 
-void TcpClient::setConnectFailCallback(const ConnectFailCallback &cb) {
-    connector_->setConnectFailCallback(cb);
+void TcpClient::defaultTCPClientConnectFailCallback(const std::string &clientName, const InetAddress &peerAddr) {
+    LOG_INFO << clientName << " cannot connect to " << peerAddr.toIpPort()
+             << ". Tried " << retryTimes_ << " times";
 }
-
