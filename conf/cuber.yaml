@@ -1,0 +1,42 @@
+main:
+  max_workers: 8
+  keepalive_timeout: 65
+  worker_connectins: 768
+  access_log: /home/mlee/CuBer/www/logs/access.log
+  error_log: /home/mlee/CuBer/www/logs/error.log
+
+server:
+  - listen: 8080
+    workers: 2
+    # server_name: 0.0.0.0
+    root_path: /home/mlee/CuBer/
+    index:
+      - index.html
+
+    proxy:
+      - location: /echo/
+        proxy_pass: echo_backend
+        proxy_set_header:
+          - X-Real-IP
+          - X-Forwarded-For
+      - location: /counter/
+        proxy_pass: count_backend
+        proxy_set_header:
+          - X-Real-IP
+          - X-Forwarded-For
+
+    static:
+      - location: /html/
+        alias: /home/mlee/CuBer/www/html/
+      - location: /static/
+        alias: /home/mlee/CuBer/www/static/
+
+upstream:
+  - name: echo_backend
+    server: 127.0.0.1:8081
+    max_fails: 3
+    fail_timout: 30
+  - name: count_backend
+    server: 127.0.0.1:8082
+    max_fails: 3
+    fail_timeout: 30
