@@ -24,8 +24,7 @@ set(net_SRCS
   TcpConnection.cc
   TcpServer.cc
   Timer.cc
-  TimerQueue.cc
-  TcpTunnle.cpp )
+  TimerQueue.cc)
 
 add_library(cuber_net ${net_SRCS})
 target_link_libraries(cuber_net cuber_base)
