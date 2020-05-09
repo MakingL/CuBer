@@ -1,3 +1,6 @@
+#include <iostream>
+#include "yaml-cpp/yaml.h"
+#include "base/Logging.h"
 #include "config/ServerConfig.h"
 
 using namespace cuber;
@@ -20,6 +23,57 @@ Server::Server(uint16_t port, int worker_num, const std::string &root,
                                                           indexFiles(index), proxyLocations(proxies),
                                                           staticLocations(statics) {
 }
+
+class YamlLoader {
+public:
+    YamlLoader() = default;
+
+    YAML::Node loadFile(const char *config_file) {
+        YAML::Node node;
+        try {
+            node = YAML::LoadFile(config_file);
+        } catch (const std::exception &e) {
+            std::cerr << "Cannot parse configure file: '" << config_file << "'. Exception: " << e.what()
+                      << std::endl;
+            std::cerr << "Please check it for existence." << std::endl;
+            exit(EXIT_FAILURE);
+        }
+        configFile_ = config_file;
+        return node;
+    }
+
+    YAML::Node getNode(const YAML::Node &node, const std::string &node_name, bool exitOnUndefined = true) { /* 获取节点 */
+        if (!node[node_name.c_str()].IsDefined()) {
+            if (exitOnUndefined) {
+                std::cerr << "Configure information: '" << node_name << "' isn't configured correctly" << std::endl;
+                std::cerr << "Please configure it in file: " << configFile_ << std::endl;
+                exit(EXIT_FAILURE);
+            } else {
+                return node;
+            }
+        }
+        return node[node_name.c_str()];;
+    }
+
+
+    template<typename T>
+    bool getVal(const YAML::Node &node, const std::string &property, T &val, bool exitOnUndefined = true) { /* 获得配置信息 */
+        if (!node[property.c_str()].IsDefined()) {
+            if (exitOnUndefined) {
+                std::cerr << "Configure information: '" << property << "' isn't configured correctly" << std::endl;
+                std::cerr << "Please configure it in file: " << configFile_ << std::endl;
+                exit(EXIT_FAILURE);
+            } else {
+                return false;
+            }
+        }
+        val = node[property.c_str()].as<T>();;
+        return true;
+    }
+
+private:
+    std::string configFile_;
+};
 
 ServerConfig::ServerConfig(const std::string &conf) : configPath_(conf) {
 

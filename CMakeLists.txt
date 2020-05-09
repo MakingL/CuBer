@@ -12,12 +12,12 @@ set(CXX_FLAGS
         -Wall
         -Wextra
         -Werror
-        -Wconversion
+        # -Wconversion
         -Wno-unused-parameter
         -Wold-style-cast
         -Woverloaded-virtual
         -Wpointer-arith
-        -Wshadow
+        # -Wshadow
         -Wwrite-strings
         # -march=native
         # -MMD
@@ -45,6 +45,10 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
 
 include_directories(${PROJECT_SOURCE_DIR}) # 头文件
 
+set(INC_DIR include)
+include_directories(${INC_DIR})
+
+add_subdirectory(lib/yaml-cpp)
 add_subdirectory(base)
 add_subdirectory(net)
 add_subdirectory(http)
