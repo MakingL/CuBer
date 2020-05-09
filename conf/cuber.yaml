@@ -1,7 +1,7 @@
 main:
   max_workers: 8
   keepalive_timeout: 65
-  worker_connectins: 768
+  worker_connections: 768
   access_log: /home/mlee/CuBer/www/logs/access.log
   error_log: /home/mlee/CuBer/www/logs/error.log
 
@@ -35,7 +35,7 @@ upstream:
   - name: echo_backend
     server: 127.0.0.1:8081
     max_fails: 3
-    fail_timout: 30
+    fail_timeout: 30
   - name: count_backend
     server: 127.0.0.1:8082
     max_fails: 3
