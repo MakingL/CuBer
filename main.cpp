@@ -14,22 +14,23 @@ using namespace cuber::net;
 using namespace cuber::config;
 
 int main(int argc, char *argv[]) {
+    std::string configPath;
+    if (!cuber::config::parse_command_parameter(argc, argv, configPath)) {
+        std::cout << "Cuber Need a configure file.\n";
+        cuber::config::show_usage();
+        exit(EXIT_FAILURE);
+    }
+
     cuber::TimeZone beijing(8 * 3600, "CST");
     cuber::Logger::setTimeZone(beijing);
 
-    int numThreads = 0;
-    if (argc > 1) {
-        Logger::setLogLevel(Logger::WARN);
-        numThreads = atoi(argv[1]);
-    }
-
-    ServerConfig serverConf("conf/cuber.yaml");
+    ServerConfig serverConf(configPath);
     serverConf.loadConfig();
     auto server_info = serverConf.serverConf(8080);
 
     EventLoop loop;
     HttpServer server(&loop, InetAddress(server_info.listenPort), "CuBer", &serverConf);
-    server.setThreadNum(numThreads);
+    server.setThreadNum(server_info.workers);
     server.start();
     loop.loop();
 }

@@ -1,4 +1,5 @@
 #include <iostream>
+#include <getopt.h>
 #include "yaml-cpp/yaml.h"
 #include "base/Logging.h"
 #include "config/ServerConfig.h"
@@ -128,7 +129,7 @@ void ServerConfig::loadConfig() {
         LOG_DEBUG << "\tworkers: " << server.workers;
         LOG_DEBUG << "\troot_path: " << server.rootPath;
         LOG_DEBUG << "\tindex: ";
-        for (const auto& indexFile : server.indexFiles) {
+        for (const auto &indexFile : server.indexFiles) {
             LOG_DEBUG << "\t\t" << indexFile;
         }
         std::vector<std::string> proxyLocations;
@@ -175,4 +176,49 @@ void ServerConfig::loadConfig() {
 
         addServer(server);
     }
+}
+
+extern int optopt;
+extern char *optarg;
+static struct option long_options[] = {
+        {"conf", required_argument, NULL, 'c'},
+        {"help", no_argument,       NULL, 'h'}
+};
+
+void cuber::config::show_usage() {
+    std::cout << "\nUsage: \n"
+              << "\t CuBer -c yaml_config_file\n"
+              << "\t CuBer -h | --help\n"
+              << "\nOptions:\n"
+              << "\t-c | --conf \t Set configure file\n"
+              << "\t-h | --help \t show help\n";
+}
+
+bool cuber::config::parse_command_parameter(int argc, char *argv[], std::string &configPath) {
+    bool success = false;
+    int c = 0;
+    while (EOF != (c = getopt_long(argc, argv, "hc:", long_options, NULL))) {
+        switch (c) {
+            case 'c':
+                success = true;
+                configPath = optarg;
+                break;
+            case 'h':
+                std::cout << "\n\tCuBer, a light weight http server.\n";
+                show_usage();
+                exit(EXIT_FAILURE);
+                /*success = false;
+                break;*/
+            case '?':
+                success = false;
+                std::cout << "\nUnknown option: " << optopt << "\n";
+                break;
+            default:
+                success = false;
+                std::cerr << "Unprocessed option: " << optopt << "\n";
+                break;
+        }
+    }
+
+    return success;
 }

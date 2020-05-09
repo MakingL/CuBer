@@ -209,6 +209,9 @@ private:
     UpstreamMap upstreams_;
 };
 
+void show_usage();
+bool parse_command_parameter(int argc, char *argv[], std::string &configPath);
+
 } // namespace config
 } // namespace cuber
 
