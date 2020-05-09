@@ -135,7 +135,7 @@ public:
 
     bool existProxy(const std::string &location)
     {
-        return static_cast<bool>(proxies_.count(location));
+        return proxies_.count(location) > 0;
     }
 
     const ProxyServer &proxyInfo(const std::string &location)
@@ -152,6 +152,10 @@ public:
     const Upstream &upstreamInfo(const std::string &name)
     {
         return upstreams_[name];
+    }
+
+    bool existUpstreamInfo(const std::string &name) {
+        return upstreams_.count(name) > 0;
     }
 
     void addStatic(const StaticInfo &static_info)
