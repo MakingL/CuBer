@@ -80,32 +80,99 @@ ServerConfig::ServerConfig(const std::string &conf) : configPath_(conf) {
 }
 
 void ServerConfig::loadConfig() {
-    MainConfig main(8, 65, 768,
-                    "/home/mlee/CuBer/www/logs/access.log",
-                    "/home/mlee/CuBer/www/logs/error.log");
+    YamlLoader yamlLoader = YamlLoader();
+    YAML::Node configRootNode = yamlLoader.loadFile(configPath_.c_str());
+    YAML::Node node;
+
+    MainConfig main;
+    node = yamlLoader.getNode(configRootNode, "main");
+    yamlLoader.getVal(node, "max_workers", main.maxWorker);
+    yamlLoader.getVal(node, "keepalive_timeout", main.keepAliveTimeout);
+    yamlLoader.getVal(node, "worker_connections", main.maxWorkerConnections);
+    yamlLoader.getVal(node, "access_log", main.accessLogPath);
+    yamlLoader.getVal(node, "error_log", main.errorLogPath);
+    LOG_DEBUG << "main config: ";
+    LOG_DEBUG << "\tmax_workers: " << main.maxWorker;
+    LOG_DEBUG << "\tkeepalive_timeout: " << main.keepAliveTimeout;
+    LOG_DEBUG << "\tworker_connections: " << main.maxWorkerConnections;
+    LOG_DEBUG << "\taccess_log: " << main.accessLogPath;
+    LOG_DEBUG << "\terror_log: " << main.errorLogPath;
     setMainConf(main);
 
-    std::vector<std::string> index{"index.html",};
-    std::vector<std::string> proxy{"/echo/", "/django/",};
-    std::vector<std::string> statics{"/html/", "/static/"};
-    std::string root("/home/mlee/CuBer/");
-    Server server(8080, 2, root, index,
-                  proxy, statics);
-    addServer(server);
+    node = yamlLoader.getNode(configRootNode, "upstream", false);
+    LOG_DEBUG << "upstream config: ";
+    if (!(node == configRootNode)) {
+        for (auto upstreamNode : node) {
+            Upstream upstreamInfo;
+            yamlLoader.getVal(upstreamNode, "name", upstreamInfo.name);
+            yamlLoader.getVal(upstreamNode, "server", upstreamInfo.address);
+            yamlLoader.getVal(upstreamNode, "max_fails", upstreamInfo.maxFails);
+            yamlLoader.getVal(upstreamNode, "fail_timeout", upstreamInfo.failTimeSecond);
+            LOG_DEBUG << "\tname: " << upstreamInfo.name;
+            LOG_DEBUG << "\tserver: " << upstreamInfo.address;
+            LOG_DEBUG << "\tmax_fails: " << upstreamInfo.maxFails;
+            LOG_DEBUG << "\tfail_timeout: " << upstreamInfo.failTimeSecond;
+            addUpstream(upstreamInfo);
+        }
+    }
 
-    StaticInfo static1("/html/", "/home/mlee/CuBer/www/html/");
-    StaticInfo static2("/static/", "/home/mlee/CuBer/www/static/");
-    addStatic(static1);
-    addStatic(static2);
+    Server server;
+    node = yamlLoader.getNode(configRootNode, "server");
+    LOG_DEBUG << "server config: ";
+    for (auto server_node: node) {
+        yamlLoader.getVal(server_node, "listen", server.listenPort);
+        yamlLoader.getVal(server_node, "workers", server.workers);
+        yamlLoader.getVal(server_node, "root_path", server.rootPath);
+        yamlLoader.getVal(server_node, "index", server.indexFiles, false);
+        LOG_DEBUG << "\tlisten: " << server.listenPort;
+        LOG_DEBUG << "\tworkers: " << server.workers;
+        LOG_DEBUG << "\troot_path: " << server.rootPath;
+        LOG_DEBUG << "\tindex: ";
+        for (const auto& indexFile : server.indexFiles) {
+            LOG_DEBUG << "\t\t" << indexFile;
+        }
+        std::vector<std::string> proxyLocations;
+        std::vector<std::string> staticLocations;
 
-    std::vector<std::string> setHeader{"X-Real-IP", "X-Forwarded-For"};
-    ProxyServer proxy1("/echo/", "echo_backend", setHeader);
-    ProxyServer proxy2("/counter/", "count_backend", setHeader);
-    addProxy(proxy1);
-    addProxy(proxy2);
+        YAML::Node proxy_nodes;
+        if (!((proxy_nodes = yamlLoader.getNode(server_node, "proxy", false)) == server_node)) {
+            LOG_DEBUG << "\tproxy: ";
+            for (auto proxy_node : proxy_nodes) {
+                ProxyServer proxyInfo;
+                yamlLoader.getVal(proxy_node, "location", proxyInfo.location);
+                yamlLoader.getVal(proxy_node, "proxy_pass", proxyInfo.upstreamName);
+                yamlLoader.getVal(proxy_node, "proxy_set_header", proxyInfo.setHeaders, false);
+                LOG_DEBUG << "\t\tlocation: " << proxyInfo.location;
+                LOG_DEBUG << "\t\tproxy_pass: " << proxyInfo.upstreamName;
+                addProxy(proxyInfo);
 
-    Upstream upstream1("echo_backend", "127.0.0.1:8081", 3, 30);
-    Upstream upstream2("count_backend", "127.0.0.1:8081", 3, 30);
-    addUpstream(upstream1);
-    addUpstream(upstream2);
+                if (!existUpstreamInfo(proxyInfo.upstreamName)) {
+                    std::cerr << "Configure information is incomplete(Doesn't exists upstream information.) for proxy: "
+                              << proxyInfo.upstreamName << std::endl;
+                    exit(EXIT_FAILURE);
+                }
+
+                proxyLocations.push_back(proxyInfo.location);
+            }
+        }
+        server.proxyLocations = proxyLocations;
+
+        YAML::Node static_nodes;
+        if (!((static_nodes = yamlLoader.getNode(server_node, "static", false)) == server_node)) {
+            LOG_DEBUG << "\tstatic: ";
+            for (auto static_node : static_nodes) {
+                StaticInfo staticInfo;
+                yamlLoader.getVal(static_node, "location", staticInfo.location);
+                yamlLoader.getVal(static_node, "alias", staticInfo.alias);
+                LOG_DEBUG << "\t\tlocation: " << staticInfo.location;
+                LOG_DEBUG << "\t\talias: " << staticInfo.alias;
+                addStatic(staticInfo);
+
+                staticLocations.push_back(staticInfo.location);
+            }
+        }
+        server.staticLocations = staticLocations;
+
+        addServer(server);
+    }
 }
