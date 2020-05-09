@@ -123,7 +123,7 @@ HttpStaticHandler::handle(ServerConfig *config, const TcpConnectionPtr &conn, Ht
     if (dot_pos == std::string::npos) {
         mime_type = MimeType::getMime("default");
     } else {
-        mime_type = MimeType::getMime(filePath.substr(dot_pos + 1));
+        mime_type = MimeType::getMime(filePath.substr(dot_pos));
     }
 
     response.setContentType(mime_type);
