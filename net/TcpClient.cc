@@ -84,7 +84,7 @@ TcpClient::TcpClient(EventLoop* loop,
       std::bind(&TcpClient::newConnection, this, _1));
   connector_->setMaxRetry(retryTimes_);
   connector_->setConnectFailCallback(std::bind(&TcpClient::onConnectFailed, this, _1));
-  LOG_INFO << "TcpClient::TcpClient[" << name_
+  LOG_TRACE << "TcpClient::TcpClient[" << name_
            << "] - connector " << get_pointer(connector_);
 }
 
@@ -122,7 +122,7 @@ TcpClient::~TcpClient()
 void TcpClient::connect()
 {
   // FIXME: check state
-  LOG_INFO << "TcpClient::connect[" << name_ << "] - connecting to "
+  LOG_TRACE << "TcpClient::connect[" << name_ << "] - connecting to "
            << connector_->serverAddress().toIpPort();
   connect_ = true;
   connector_->start();
@@ -193,7 +193,7 @@ void TcpClient::removeConnection(const TcpConnectionPtr& conn)
   loop_->queueInLoop(std::bind(&TcpConnection::connectDestroyed, conn));
   if (retry_ && connect_)
   {
-    LOG_INFO << "TcpClient::connect[" << name_ << "] - Reconnecting to "
+    LOG_TRACE << "TcpClient::connect[" << name_ << "] - Reconnecting to "
              << connector_->serverAddress().toIpPort();
     connector_->restart();
   }
