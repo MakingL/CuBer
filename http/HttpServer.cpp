@@ -29,6 +29,7 @@ HttpServer::HttpServer(EventLoop *loop,
           httpCallback_(detail::defaultHttpCallback),
           serverName_(name),
           config_(config),
+          kMaxConnections_(config_->mainConf().maxWorkerConnections),
           httpHandler_(new HttpHandler(new HttpAccessHandler(new HttpStaticHandler))),
           httpFilter_(new HttpFilter(new HttpHeadersFilter(new HttpWriteFilter))) {
     server_.setConnectionCallback(std::bind(&HttpServer::onConnection, this, _1));
@@ -49,7 +50,14 @@ void HttpServer::start() {
 void HttpServer::onConnection(const TcpConnectionPtr &conn) {
     LOG_TRACE << "On connection: " << conn->name();
     if (conn->connected()) {
+        if (numConnected_.incrementAndGet() > kMaxConnections_) {
+            conn->shutdown();
+            conn->forceCloseWithDelay(3.0); // > round trip of the whole Internet.
+        }
+
         conn->setContext(HttpContext());
+    } else {
+        numConnected_.decrement();
     }
 }
 

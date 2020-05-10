@@ -60,6 +60,8 @@ private:
     HttpCallback httpCallback_;
     const string serverName_;
     ServerConfig *config_;
+    const int kMaxConnections_;
+    AtomicInt32 numConnected_;
     std::unique_ptr<AbstractHttpHandler> httpHandler_;
     std::unique_ptr<AbstractHttpFilter> httpFilter_;
 };
