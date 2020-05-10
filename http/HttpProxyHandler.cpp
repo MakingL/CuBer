@@ -35,7 +35,7 @@ HttpHandleState HttpProxyHandler::handle(ServerConfig *config, const TcpConnecti
     if (colon_pos == std::string::npos) {
         port = 80;
     } else {
-        ipAddr.assign(addr.substr(0, colon_pos - 1));
+        ipAddr.assign(addr.substr(0, colon_pos));
         port = std::stoi(addr.substr(colon_pos + 1));
     }
 
