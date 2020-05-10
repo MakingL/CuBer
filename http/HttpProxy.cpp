@@ -6,7 +6,7 @@ using namespace cuber::net;
 
 HttpProxy::HttpProxy(EventLoop *loop, InetAddress serverAddr, std::string &nameArg)
         : loop_(loop), upstreamAddr_(serverAddr),
-          client_(loop, serverAddr, nameArg),
+          client_(loop, serverAddr, nameArg, 0),
           connectFailCallback_(defaultTCPClientConnectFailCallback),
           messageCallback_(defaultMessageCallback) {
 
