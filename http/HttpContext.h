@@ -3,6 +3,7 @@
 
 #include "base/copyable.h"
 #include "http/HttpRequest.h"
+#include "HttpTimer.h"
 
 namespace cuber
 {
@@ -64,6 +65,12 @@ public:
     return request_;
   }
 
+  void setTimerPos(HttpTimerPos timerPos)
+  { timerPos_ = timerPos; }
+
+  const HttpTimerPos &timerPos()
+  { return timerPos_; }
+
 private:
   bool parseRequestLine(const char *begin, const char *end);
 
@@ -73,6 +80,7 @@ private:
 
   HttpRequestParseState state_;
   HttpRequest request_;
+  HttpTimerPos timerPos_;
 };
 
 } // namespace net

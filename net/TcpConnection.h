@@ -106,6 +106,12 @@ class TcpConnection : noncopyable,
   Buffer* outputBuffer()
   { return &outputBuffer_; }
 
+  Timestamp lastReceiveTime()
+  { return lastReceiveTime_; }
+
+  void updateLastReceiveTime(const Timestamp& timestamp)
+  { lastReceiveTime_ = timestamp; }
+
   /// Internal use only.
   void setCloseCallback(const CloseCallback& cb)
   { closeCallback_ = cb; }
@@ -150,6 +156,7 @@ class TcpConnection : noncopyable,
   Buffer inputBuffer_;
   Buffer outputBuffer_; // FIXME: use list<Buffer> as output buffer.
   boost::any context_;
+  Timestamp lastReceiveTime_;
   // FIXME: creationTime_, lastReceiveTime_
   //        bytesReceived_, bytesSent_
 };
