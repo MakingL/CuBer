@@ -57,6 +57,7 @@ void HttpServer::onConnection(const TcpConnectionPtr &conn) {
 
         conn->setContext(HttpContext());
     } else {
+        conn->forceClose();
         numConnected_.decrement();
     }
 }
