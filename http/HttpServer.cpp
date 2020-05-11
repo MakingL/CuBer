@@ -6,6 +6,7 @@
 #include "http/HttpRequest.h"
 #include "http/HttpResponse.h"
 #include "http/HttpProxyHandler.h"
+#include "http/HttpTimer.h"
 
 using namespace cuber;
 using namespace cuber::net;
@@ -30,6 +31,7 @@ HttpServer::HttpServer(EventLoop *loop,
           serverName_(name),
           config_(config),
           kMaxConnections_(config_->mainConf().maxWorkerConnections),
+          keepAliveTimer_(nullptr),
           httpHandler_(new HttpHandler(new HttpAccessHandler(new HttpStaticHandler))),
           httpFilter_(new HttpFilter(new HttpHeadersFilter(new HttpWriteFilter))) {
     server_.setConnectionCallback(std::bind(&HttpServer::onConnection, this, _1));
@@ -39,6 +41,9 @@ HttpServer::HttpServer(EventLoop *loop,
     proxyHandler->setResponseCallback(std::bind(&HttpServer::proxyResponseCallback, this, _1, _2));
     httpHandler_->appendHandler(proxyHandler);
     httpHandler_->appendHandler(new HttpDefaultHandler);
+    if (config_->mainConf().keepAliveTimeout > 0) {
+        keepAliveTimer_.reset(new HttpTimer(loop, config_->mainConf().keepAliveTimeout));
+    }
 }
 
 void HttpServer::start() {
@@ -48,16 +53,28 @@ void HttpServer::start() {
 }
 
 void HttpServer::onConnection(const TcpConnectionPtr &conn) {
-    LOG_TRACE << "On connection: " << conn->name();
     if (conn->connected()) {
+        LOG_DEBUG << "On connected: " << conn->name();
         if (numConnected_.incrementAndGet() > kMaxConnections_) {
             conn->shutdown();
             conn->forceCloseWithDelay(3.0); // > round trip of the whole Internet.
         }
 
-        conn->setContext(HttpContext());
-    } else {
+        if (keepAliveTimer_) {
+            HttpContext context = HttpContext();
+            context.setTimerPos(keepAliveTimer_->addHttpConnection(conn));
+            conn->setContext(context);
+        } else {
+            conn->setContext(HttpContext());
+        }
+    } else if (conn->disconnected()) {
+        LOG_DEBUG << "On client closed: " << conn->name();
         conn->forceClose();
+
+        if (keepAliveTimer_) {
+            auto *context = boost::any_cast<HttpContext>(conn->getMutableContext());
+            keepAliveTimer_->removeHttpConnection(context->timerPos());
+        }
         numConnected_.decrement();
     }
 }

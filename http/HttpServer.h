@@ -13,6 +13,7 @@ namespace net{
 
 class HttpRequest;
 class HttpResponse;
+class HttpTimer;
 
 class HttpServer : noncopyable
 {
@@ -62,6 +63,7 @@ private:
     ServerConfig *config_;
     const int kMaxConnections_;
     AtomicInt32 numConnected_;
+    std::shared_ptr<HttpTimer> keepAliveTimer_;
     std::unique_ptr<AbstractHttpHandler> httpHandler_;
     std::unique_ptr<AbstractHttpFilter> httpFilter_;
 };
