@@ -84,16 +84,18 @@ HttpProxyHandler::doProxyResponse(HttpResponseContext *context, const TcpConnect
 
     onResponse(req_conn, context->response());
 
-    auto req_context = boost::any_cast<HttpContext>(req_conn->getMutableContext());
-    auto req = req_context->request();
-    const string &connection = req.getHeader("Connection");
-    bool close = connection == "close" ||
-                 (req.getVersion() == HttpRequest::kHttp10 && connection != "Keep-Alive");
-
-    if (close) {
-        clientConnMap.erase(requestConnName);
-        responseConn->shutdown();
-    }
+//    auto req_context = boost::any_cast<HttpContext>(req_conn->getMutableContext());
+//    auto req = req_context->request();
+//    const string &connection = req.getHeader("Connection");
+//    bool close = connection == "close" ||
+//                 (req.getVersion() == HttpRequest::kHttp10 && connection != "Keep-Alive");
+//
+//    if (close) {
+//        clientConnMap.erase(requestConnName);
+//        responseConn->shutdown();
+//    }
+    clientConnMap.erase(requestConnName);   // FIXME: 考虑长连接情况下的复用
+    responseConn->shutdown();
 }
 
 void HttpProxyHandler::onBadUpstreamResponse(HttpResponseContext *context, const TcpConnectionPtr &responseConn) {
@@ -108,16 +110,18 @@ void HttpProxyHandler::onBadUpstreamResponse(HttpResponseContext *context, const
     response.setStatusCode(HttpResponse::k500InternalServerError);
     onResponse(req_conn, response);
 
-    auto req_context = boost::any_cast<HttpContext>(req_conn->getMutableContext());
-    auto req = req_context->request();
-    const string &connection = req.getHeader("Connection");
-    bool close = connection == "close" ||
-                 (req.getVersion() == HttpRequest::kHttp10 && connection != "Keep-Alive");
-
-    if (close) {
-        clientConnMap.erase(requestConnName);
-        responseConn->shutdown();
-    }
+//    auto req_context = boost::any_cast<HttpContext>(req_conn->getMutableContext());
+//    auto req = req_context->request();
+//    const string &connection = req.getHeader("Connection");
+//    bool close = connection == "close" ||
+//                 (req.getVersion() == HttpRequest::kHttp10 && connection != "Keep-Alive");
+//
+//    if (close) {
+//        clientConnMap.erase(requestConnName);
+//        responseConn->shutdown();
+//    }
+    clientConnMap.erase(requestConnName);
+    responseConn->shutdown();
 }
 
 void HttpProxyHandler::onForwardFailed(const std::string &clientName, const InetAddress &peerAddr) {
@@ -132,13 +136,14 @@ void HttpProxyHandler::onForwardFailed(const std::string &clientName, const Inet
     response.setStatusCode(HttpResponse::k503ServiceUnavailable);
     onResponse(req_conn, response);
 
-    auto req_context = boost::any_cast<HttpContext>(req_conn->getMutableContext());
-    auto req = req_context->request();
-    const string &connection = req.getHeader("Connection");
-    bool close = connection == "close" ||
-                 (req.getVersion() == HttpRequest::kHttp10 && connection != "Keep-Alive");
-
-    if (close) {
-        clientConnMap.erase(requestConnName);
-    }
+//    auto req_context = boost::any_cast<HttpContext>(req_conn->getMutableContext());
+//    auto req = req_context->request();
+//    const string &connection = req.getHeader("Connection");
+//    bool close = connection == "close" ||
+//                 (req.getVersion() == HttpRequest::kHttp10 && connection != "Keep-Alive");
+//
+//    if (close) {
+//        clientConnMap.erase(requestConnName);
+//    }
+    clientConnMap.erase(requestConnName);
 }
