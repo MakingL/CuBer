@@ -173,10 +173,12 @@ HttpPressureTestHandler::handle(ServerConfig *config, const TcpConnectionPtr &co
 
     if (path == "/hello/") {
         response.setBody("hello, world!\n");
+        response.setStatusCode(HttpResponse::k200Ok);
     } else if (path == "/") {
         response.setBody("<html><head><title>Pressure Test</title></head>"
                          "<body><h1>CuBer. Pressure Test Model</h1>"
                          "</body></html>");
+        response.setStatusCode(HttpResponse::k200Ok);
     } else {
         response.setStatusCode(HttpResponse::k404NotFound);
     }
