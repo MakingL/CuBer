@@ -123,7 +123,7 @@ bool HttpServer::onRequest(const TcpConnectionPtr &conn, HttpRequest &req) {
     }
     if (!forwarded) {
         httpCallback_(req, &response);
-        httpFilter_->filter(conn, req, response);
+        httpFilter_->filter(config_, conn, req, response);
         return true;
     } else {
         return false;
@@ -144,6 +144,6 @@ void HttpServer::onBadMessage(const TcpConnectionPtr &conn) {
 void HttpServer::proxyResponseCallback(const TcpConnectionPtr &requestConn, HttpResponse &resp) {
     auto context = boost::any_cast<HttpContext>(requestConn->getMutableContext());
 
-    httpFilter_->doNextFilter(requestConn, context->request(), resp);
+    httpFilter_->doNextFilter(config_, requestConn, context->request(), resp);
 }
 
