@@ -145,5 +145,6 @@ void HttpServer::proxyResponseCallback(const TcpConnectionPtr &requestConn, Http
     auto context = boost::any_cast<HttpContext>(requestConn->getMutableContext());
 
     httpFilter_->doNextFilter(config_, requestConn, context->request(), resp);
+    context->reset();
 }
 
