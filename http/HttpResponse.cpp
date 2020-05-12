@@ -102,7 +102,6 @@ void HttpResponse::appendToBuffer(Buffer *output) const {
     /* Response Body */
     if (!body_.empty()) {
         output->append(body_);
-        output->append("\r\n");
     }
 }
 
