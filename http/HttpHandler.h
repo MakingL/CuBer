@@ -141,6 +141,20 @@ public:
     HttpHandleState handle(ServerConfig *config, const TcpConnectionPtr &conn, HttpRequest &request, HttpResponse &response) override;
 };
 
+class HttpPressureTestHandler : public AbstractHttpHandler
+{   // Web Server Pressure Test Handle, just response simple string for GET method
+public:
+    explicit HttpPressureTestHandler() : AbstractHttpHandler()
+    {
+    }
+
+    explicit HttpPressureTestHandler(HttpHandlerPtr nextHandler) : AbstractHttpHandler(nextHandler)
+    {
+    }
+
+    HttpHandleState handle(ServerConfig *config, const TcpConnectionPtr &conn, HttpRequest &request, HttpResponse &response) override;
+};
+
 class HttpDefaultHandler : public AbstractHttpHandler
 {
 public:

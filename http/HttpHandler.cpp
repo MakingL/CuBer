@@ -161,3 +161,25 @@ HttpHandleState HttpDefaultHandler::handle(ServerConfig *config, const TcpConnec
     response.setStatusCode(HttpResponse::k404NotFound);
     return kHandleDone;
 }
+
+HttpHandleState
+HttpPressureTestHandler::handle(ServerConfig *config, const TcpConnectionPtr &conn, HttpRequest &request,
+                                HttpResponse &response) {
+    // Web Server Pressure Test Handle, just response simple string for GET method
+    const std::string &path = request.path();
+    if (path.empty()) {
+        return kHandleAgain;
+    }
+
+    if (path == "/hello/") {
+        response.setBody("hello, world!\n");
+    } else if (path == "/") {
+        response.setBody("<html><head><title>Pressure Test</title></head>"
+                         "<body><h1>CuBer. Pressure Test Model</h1>"
+                         "</body></html>");
+    } else {
+        response.setStatusCode(HttpResponse::k404NotFound);
+    }
+
+    return kHandleDone;
+}

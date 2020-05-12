@@ -1,0 +1,13 @@
+main:
+  max_workers: 8
+  keepalive_timeout: 0
+  worker_connections: 65530
+  access_log: /var/log/CuBer/access.log
+  error_log: /var/log/CuBer/error.log
+
+server:
+  - listen: 8080
+    workers: 4
+    root_path: /var/www/html/
+    index:
+      - index.html

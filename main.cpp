@@ -21,8 +21,13 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     }
 
+#ifndef PRESSURE_TEST
     cuber::TimeZone beijing(8 * 3600, "CST");
     cuber::Logger::setTimeZone(beijing);
+    Logger::setLogLevel(Logger::WARN);
+#else
+    Logger::setLogLevel(Logger::FATAL);
+#endif
 
     ServerConfig serverConf(configPath);
     serverConf.loadConfig();

@@ -32,7 +32,11 @@ HttpServer::HttpServer(EventLoop *loop,
           config_(config),
           kMaxConnections_(config_->mainConf().maxWorkerConnections),
           keepAliveTimer_(nullptr),
-          httpHandler_(new HttpHandler(new HttpAccessHandler(new HttpStaticHandler))),
+#ifdef PRESSURE_TEST
+          httpHandler_(new HttpHandler(new HttpPressureTestHandler)),
+#else
+        httpHandler_(new HttpHandler(new HttpAccessHandler(new HttpStaticHandler))),
+#endif
           httpFilter_(new HttpFilter(new HttpHeadersFilter(new HttpWriteFilter))) {
     server_.setConnectionCallback(std::bind(&HttpServer::onConnection, this, _1));
     server_.setMessageCallback(std::bind(&HttpServer::onMessage, this, _1, _2, _3));
@@ -41,9 +45,11 @@ HttpServer::HttpServer(EventLoop *loop,
     proxyHandler->setResponseCallback(std::bind(&HttpServer::proxyResponseCallback, this, _1, _2));
     httpHandler_->appendHandler(proxyHandler);
     httpHandler_->appendHandler(new HttpDefaultHandler);
+#ifdef PRESSURE_TEST
     if (config_->mainConf().keepAliveTimeout > 0) {
         keepAliveTimer_.reset(new HttpTimer(loop, config_->mainConf().keepAliveTimeout));
     }
+#endif
 }
 
 void HttpServer::start() {
@@ -57,7 +63,12 @@ void HttpServer::onConnection(const TcpConnectionPtr &conn) {
         LOG_DEBUG << "On connected: " << conn->name();
         if (numConnected_.incrementAndGet() > kMaxConnections_) {
             conn->shutdown();
+#ifndef PRESSURE_TEST
             conn->forceCloseWithDelay(3.0); // > round trip of the whole Internet.
+#else
+            conn->forceClose();
+            return;
+#endif
         }
 
         if (keepAliveTimer_) {

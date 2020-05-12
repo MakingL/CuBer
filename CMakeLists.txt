@@ -41,6 +41,15 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O2 -DNDEBUG")
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
 set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
 
+# Option for Pressure Test model
+# Open Usage:
+#   1. `cmake ./ -DPRESSURE_TEST_MODEL=ON`
+#   2. `make`
+OPTION(PRESSURE_TEST_MODEL "Server pressure test model" OFF)
+IF(PRESSURE_TEST_MODEL)
+    ADD_DEFINITIONS("-DPRESSURE_TEST")
+ENDIF(PRESSURE_TEST_MODEL)
+
 #include_directories(${Boost_INCLUDE_DIRS})
 
 include_directories(${PROJECT_SOURCE_DIR}) # 头文件
