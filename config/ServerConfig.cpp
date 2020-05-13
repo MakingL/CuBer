@@ -90,8 +90,8 @@ void ServerConfig::loadConfig() {
     yamlLoader.getVal(node, "max_workers", main.maxWorker);
     yamlLoader.getVal(node, "keepalive_timeout", main.keepAliveTimeout);
     yamlLoader.getVal(node, "worker_connections", main.maxWorkerConnections);
-    yamlLoader.getVal(node, "access_log", main.accessLogPath);
-    yamlLoader.getVal(node, "error_log", main.errorLogPath);
+    yamlLoader.getVal(node, "access_log", main.accessLogPath, false);
+    yamlLoader.getVal(node, "error_log", main.errorLogPath, false);
     LOG_DEBUG << "main config: ";
     LOG_DEBUG << "\tmax_workers: " << main.maxWorker;
     LOG_DEBUG << "\tkeepalive_timeout: " << main.keepAliveTimeout;
