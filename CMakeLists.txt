@@ -70,3 +70,6 @@ target_link_libraries(CuBer cuber_base)
 target_link_libraries(CuBer cuber_net)
 target_link_libraries(CuBer cuber_http)
 target_link_libraries(CuBer cuber_config)
+
+install(TARGETS CuBer
+        RUNTIME DESTINATION bin)
