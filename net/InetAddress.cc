@@ -12,6 +12,7 @@
 #include "net/Endian.h"
 #include "net/SocketsOps.h"
 
+#include <cstddef>
 #include <netdb.h>
 #include <netinet/in.h>
 

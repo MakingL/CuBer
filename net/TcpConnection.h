@@ -11,6 +11,7 @@
 #ifndef CUBER_NET_TCPCONNECTION_H
 #define CUBER_NET_TCPCONNECTION_H
 
+#include "base/Any.h"
 #include "base/noncopyable.h"
 #include "base/StringPiece.h"
 #include "base/Types.h"
@@ -19,8 +20,6 @@
 #include "net/InetAddress.h"
 
 #include <memory>
-
-#include <boost/any.hpp>
 
 // struct tcp_info is in <netinet/tcp.h>
 struct tcp_info;
@@ -78,13 +77,13 @@ class TcpConnection : noncopyable,
   void stopRead();
   bool isReading() const { return reading_; }; // NOT thread safe, may race with start/stopReadInLoop
 
-  void setContext(const boost::any& context)
+  void setContext(const any& context)
   { context_ = context; }
 
-  const boost::any& getContext() const
+  const any& getContext() const
   { return context_; }
 
-  boost::any* getMutableContext()
+  any* getMutableContext()
   { return &context_; }
 
   void setConnectionCallback(const ConnectionCallback& cb)
@@ -155,7 +154,7 @@ class TcpConnection : noncopyable,
   size_t highWaterMark_;
   Buffer inputBuffer_;
   Buffer outputBuffer_; // FIXME: use list<Buffer> as output buffer.
-  boost::any context_;
+  any context_;
   Timestamp lastReceiveTime_;
   // FIXME: creationTime_, lastReceiveTime_
   //        bytesReceived_, bytesSent_

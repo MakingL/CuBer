@@ -9,7 +9,7 @@
 #include "base/Condition.h"
 #include "base/Mutex.h"
 
-#include <boost/circular_buffer.hpp>
+#include <deque>
 #include <assert.h>
 
 namespace cuber
@@ -19,35 +19,23 @@ template<typename T>
 class BoundedBlockingQueue : noncopyable
 {
  public:
-  explicit BoundedBlockingQueue(int maxSize)
-    : mutex_(),
+  explicit BoundedBlockingQueue(unsigned maxSize)
+    : maxSize_(maxSize),
+      mutex_(),
       notEmpty_(mutex_),
-      notFull_(mutex_),
-      queue_(maxSize)
+      notFull_(mutex_)
   {
   }
 
   void put(const T& x)
   {
     MutexLockGuard lock(mutex_);
-    while (queue_.full())
+    while (queue_.size() == maxSize_)
     {
       notFull_.wait();
     }
-    assert(!queue_.full());
+    assert(queue_.size() < maxSize_);
     queue_.push_back(x);
-    notEmpty_.notify();
-  }
-
-  void put(T&& x)
-  {
-    MutexLockGuard lock(mutex_);
-    while (queue_.full())
-    {
-      notFull_.wait();
-    }
-    assert(!queue_.full());
-    queue_.push_back(std::move(x));
     notEmpty_.notify();
   }
 
@@ -59,7 +47,7 @@ class BoundedBlockingQueue : noncopyable
       notEmpty_.wait();
     }
     assert(!queue_.empty());
-    T front(std::move(queue_.front()));
+    T front(queue_.front());
     queue_.pop_front();
     notFull_.notify();
     return front;
@@ -74,7 +62,7 @@ class BoundedBlockingQueue : noncopyable
   bool full() const
   {
     MutexLockGuard lock(mutex_);
-    return queue_.full();
+    return queue_.size() == maxSize_;
   }
 
   size_t size() const
@@ -90,10 +78,11 @@ class BoundedBlockingQueue : noncopyable
   }
 
  private:
+  const unsigned             maxSize_;
   mutable MutexLock          mutex_;
   Condition                  notEmpty_ GUARDED_BY(mutex_);
   Condition                  notFull_ GUARDED_BY(mutex_);
-  boost::circular_buffer<T>  queue_ GUARDED_BY(mutex_);
+  std::deque<T>              queue_ GUARDED_BY(mutex_);
 };
 
 }  // namespace cuber

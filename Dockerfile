@@ -9,13 +9,13 @@ COPY . /usr/local/src/CuBer
 RUN mkdir -p /usr/local/CuBer/conf/ /usr/local/CuBer/www/ && \
     mkdir /var/log/CuBer && \
     cd /usr/local/src/CuBer && \
-    yum -y install make cmake gcc-c++ boost boost-devel && \
+    yum -y install make cmake gcc-c++ && \
     cp vendor/index/index.html /usr/local/CuBer/www/ && \
     cp conf/cuber.yaml /usr/local/CuBer/conf/ && \
     cmake -DCMAKE_INSTALL_PREFIX=/usr/local/CuBer/ ./ && \
     make install && \
     cd .. && rm CuBer/ -rf && \
-    yum -y remove make cmake gcc-c++ boost boost-devel
+    yum -y remove make cmake gcc-c++
 
 WORKDIR /usr/local/CuBer
 

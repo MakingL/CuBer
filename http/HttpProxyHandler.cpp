@@ -1,3 +1,4 @@
+#include "base/Any.h"
 #include "http/HttpProxyHandler.h"
 #include "http/HttpProxy.h"
 
@@ -54,7 +55,7 @@ HttpHandleState HttpProxyHandler::handle(ServerConfig *config, const TcpConnecti
 }
 
 void HttpProxyHandler::onResponseMessage(const TcpConnectionPtr &responseConn, Buffer *buff, Timestamp recvTime) {
-    auto *context = boost::any_cast<HttpResponseContext>(responseConn->getMutableContext());
+    auto *context = any_cast<HttpResponseContext>(responseConn->getMutableContext());
 
     switch (context->parseResponse(buff, recvTime)) {
         case HttpResponseContext::kBadMessage:
@@ -84,7 +85,7 @@ HttpProxyHandler::doProxyResponse(HttpResponseContext *context, const TcpConnect
 
     onResponse(req_conn, context->response());
 
-//    auto req_context = boost::any_cast<HttpContext>(req_conn->getMutableContext());
+//    auto req_context = any_cast<HttpContext>(req_conn->getMutableContext());
 //    auto req = req_context->request();
 //    const string &connection = req.getHeader("Connection");
 //    bool close = connection == "close" ||
@@ -110,7 +111,7 @@ void HttpProxyHandler::onBadUpstreamResponse(HttpResponseContext *context, const
     response.setStatusCode(HttpResponse::k500InternalServerError);
     onResponse(req_conn, response);
 
-//    auto req_context = boost::any_cast<HttpContext>(req_conn->getMutableContext());
+//    auto req_context = any_cast<HttpContext>(req_conn->getMutableContext());
 //    auto req = req_context->request();
 //    const string &connection = req.getHeader("Connection");
 //    bool close = connection == "close" ||
@@ -136,7 +137,7 @@ void HttpProxyHandler::onForwardFailed(const std::string &clientName, const Inet
     response.setStatusCode(HttpResponse::k503ServiceUnavailable);
     onResponse(req_conn, response);
 
-//    auto req_context = boost::any_cast<HttpContext>(req_conn->getMutableContext());
+//    auto req_context = any_cast<HttpContext>(req_conn->getMutableContext());
 //    auto req = req_context->request();
 //    const string &connection = req.getHeader("Connection");
 //    bool close = connection == "close" ||

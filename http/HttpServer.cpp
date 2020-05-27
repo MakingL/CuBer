@@ -1,3 +1,4 @@
+#include "base/Any.h"
 #include "base/FileUtil.h"
 #include "base/Logging.h"
 
@@ -83,7 +84,7 @@ void HttpServer::onConnection(const TcpConnectionPtr &conn) {
         conn->forceClose();
 
         if (keepAliveTimer_) {
-            auto *context = boost::any_cast<HttpContext>(conn->getMutableContext());
+            auto *context = any_cast<HttpContext>(conn->getMutableContext());
             keepAliveTimer_->removeHttpConnection(context->timerPos());
         }
         numConnected_.decrement();
@@ -93,7 +94,7 @@ void HttpServer::onConnection(const TcpConnectionPtr &conn) {
 void HttpServer::onMessage(const TcpConnectionPtr &conn,
                            Buffer *buf,
                            Timestamp receiveTime) {
-    auto *context = boost::any_cast<HttpContext>(conn->getMutableContext());
+    auto *context = any_cast<HttpContext>(conn->getMutableContext());
 
     switch (context->parseRequest(buf, receiveTime)) {
         case HttpContext::kBadMessage:
@@ -153,7 +154,7 @@ void HttpServer::onBadMessage(const TcpConnectionPtr &conn) {
 
 
 void HttpServer::proxyResponseCallback(const TcpConnectionPtr &requestConn, HttpResponse &resp) {
-    auto context = boost::any_cast<HttpContext>(requestConn->getMutableContext());
+    auto context = any_cast<HttpContext>(requestConn->getMutableContext());
 
     httpFilter_->doNextFilter(config_, requestConn, context->request(), resp);
     context->reset();
