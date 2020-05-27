@@ -73,26 +73,22 @@ Cuber 具备以下特性:
 
 1. 环境
 
-    - Linux
+    - Linux kernel version >= 2.6.28
     - cmake2.6 及以上版本
-    - gcc-c++
+    - GCC >= 4.7
 
-2. 依赖
+2. 安装编译工具
 
-    - boost
+    - `sudo yum install make cmake gcc gcc-c++`
 
-3. 安装依赖环境
-
-    - `sudo yum install make cmake gcc gcc-c++ boost boost-devel`
-
-4. 构建编译
+3. 构建编译
 
     - `cmake ./`
     - `make`
 
-5. 按需求修改配置文件，示例配置文件为 `conf/cuber_full.yaml`
+4. 按需求修改配置文件，示例配置文件为 `conf/cuber_full.yaml`
 
-6. 运行 CuBer
+5. 运行 CuBer
 
     `./bin/CuBer -c conf/cuber.yaml` (其中的 `conf/cuber.yaml` 按照需求自行替换)
 
