@@ -2,8 +2,13 @@ main:
   max_workers: 8
   keepalive_timeout: 65
   worker_connections: 768
-  access_log: /var/log/CuBer/access.log
-  error_log: /var/log/CuBer/error.log
+  log:
+    - name: access # HTTP access logger
+      path: /var/log/CuBer/access
+      roll_size:  104857600 # 100M
+    - name: error # HTTP error logger
+      path: /var/log/CuBer/error
+      roll_size:  104857600 # 100M
 
 server:
   - listen: 8080

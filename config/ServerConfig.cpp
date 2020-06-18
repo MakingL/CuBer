@@ -90,14 +90,29 @@ void ServerConfig::loadConfig() {
     yamlLoader.getVal(node, "max_workers", main.maxWorker);
     yamlLoader.getVal(node, "keepalive_timeout", main.keepAliveTimeout);
     yamlLoader.getVal(node, "worker_connections", main.maxWorkerConnections);
-    yamlLoader.getVal(node, "access_log", main.accessLogPath, false);
-    yamlLoader.getVal(node, "error_log", main.errorLogPath, false);
     LOG_DEBUG << "main config: ";
     LOG_DEBUG << "\tmax_workers: " << main.maxWorker;
     LOG_DEBUG << "\tkeepalive_timeout: " << main.keepAliveTimeout;
     LOG_DEBUG << "\tworker_connections: " << main.maxWorkerConnections;
-    LOG_DEBUG << "\taccess_log: " << main.accessLogPath;
-    LOG_DEBUG << "\terror_log: " << main.errorLogPath;
+
+    node = yamlLoader.getNode(node, "log", true);
+    if (!(node == configRootNode)) {
+        LOG_DEBUG << "log config: ";
+        for (auto loggerNode : node) {
+            LoggerConfig loggerInfo;
+            yamlLoader.getVal(loggerNode, "name", loggerInfo.loggerName);
+            yamlLoader.getVal(loggerNode, "path", loggerInfo.logSavePath);
+            yamlLoader.getVal(loggerNode, "roll_size", loggerInfo.rollFileSize, false);
+
+            LOG_DEBUG << "\tname: " << loggerInfo.loggerName;
+            LOG_DEBUG << "\tpath: " << loggerInfo.logSavePath;
+            LOG_DEBUG << "\troll_size: " << loggerInfo.rollFileSize;
+
+            addLoggerInfo(loggerInfo.loggerName, loggerInfo);
+        }
+        main.setLoggersInfo(loggersConfig_);
+    }
+
     setMainConf(main);
 
     node = yamlLoader.getNode(configRootNode, "upstream", false);

@@ -11,22 +11,46 @@
 
 namespace cuber {
 namespace config {
+
+class LoggerConfig {
+public:
+    std::string loggerName;
+    std::string logSavePath;
+    long long rollFileSize;
+
+    LoggerConfig() : loggerName("default"),
+                    logSavePath("defaultLog"),
+                    rollFileSize(0) {
+    }
+
+    LoggerConfig(std::string name, std::string path, long long rollSize)
+                : loggerName(std::move(name)),
+                logSavePath(std::move(path)), rollFileSize(rollSize) {
+    }
+};
+
 class MainConfig
 {
 public:
     int maxWorker;
     int keepAliveTimeout;
     int maxWorkerConnections;
-    std::string accessLogPath;
-    std::string errorLogPath;
+    std::unordered_map<std::string, LoggerConfig> loggers;
 
-    explicit MainConfig(int workers = 4, int keepaliveTime = 65, int workerConn = 768,
-                        std::string accessLog = "",
-                        std::string errorLog = "")
+    explicit MainConfig(int workers = 4, int keepaliveTime = 65, int workerConn = 768)
+                        : maxWorker(workers), keepAliveTimeout(keepaliveTime),
+                        maxWorkerConnections(workerConn) {
+    }
+
+    explicit MainConfig(std::unordered_map<std::string, LoggerConfig> loggerMap,
+                        int workers=4, int keepaliveTime = 65, int workerConn = 768)
                         : maxWorker(workers), keepAliveTimeout(keepaliveTime),
                         maxWorkerConnections(workerConn),
-                        accessLogPath(std::move(accessLog)),
-                        errorLogPath(std::move(errorLog))    {
+                        loggers(std::move(loggerMap))    {
+    }
+
+    void setLoggersInfo(const std::unordered_map<std::string, LoggerConfig>& loggersInfo) {
+        loggers = loggersInfo;
     }
 };
 
@@ -108,6 +132,24 @@ public:
     const MainConfig &mainConf() const
     {
         return serverMainConfig_;
+    }
+
+    void addLoggerInfo(const std::string& name, const LoggerConfig& logger)
+    {
+        loggersConfig_[name] = logger;
+    }
+
+    std::unordered_map<std::string, LoggerConfig>& loggersInfo()
+    {
+        return loggersConfig_;
+    }
+
+    bool configuredLogger() const {
+        return !loggersConfig_.empty();
+    }
+
+    bool existLogger(const std::string& name) const {
+        return loggersConfig_.count(name);
     }
 
     void addServer(const Server &server)
@@ -203,6 +245,7 @@ private:
     std::unordered_set<int> listenedPorts_;
     std::unordered_set<std::string> locations_;
     MainConfig serverMainConfig_;
+    std::unordered_map<std::string, LoggerConfig> loggersConfig_;
     ServerMap servers_;
     StaticsMap statics_;
     ProxyMap proxies_;
