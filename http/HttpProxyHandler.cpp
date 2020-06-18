@@ -109,6 +109,7 @@ void HttpProxyHandler::onBadUpstreamResponse(HttpResponseContext *context, const
 
     HttpResponse response;
     response.setStatusCode(HttpResponse::k500InternalServerError);
+    response.setErrorMsg("Upstream " + responseConn->peerAddress().toIpPort() + " response Bad Message.");
     onResponse(req_conn, response);
 
 //    auto req_context = any_cast<HttpContext>(req_conn->getMutableContext());
@@ -135,6 +136,7 @@ void HttpProxyHandler::onForwardFailed(const std::string &clientName, const Inet
 
     HttpResponse response;
     response.setStatusCode(HttpResponse::k503ServiceUnavailable);
+    response.setErrorMsg("Upstream " + peerAddr.toIpPort() + " is unreachable");
     onResponse(req_conn, response);
 
 //    auto req_context = any_cast<HttpContext>(req_conn->getMutableContext());

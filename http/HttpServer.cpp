@@ -50,6 +50,15 @@ HttpServer::HttpServer(EventLoop *loop,
     if (config_->mainConf().keepAliveTimeout > 0) {
         keepAliveTimer_.reset(new HttpTimer(loop, config_->mainConf().keepAliveTimeout));
     }
+
+    if (config->configuredLogger()) {
+        std::unordered_map<std::string, LoggerConfig> logConf = config->loggersInfo();
+        for (auto &logger : logConf) {
+            FileLogging::addLogger(logger.first, logger.second.logSavePath, logger.second.rollFileSize);
+        }
+
+        httpFilter_->appendFilter(new HttpLoggingFilter);
+    }
 #endif
 }
 

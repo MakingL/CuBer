@@ -66,11 +66,21 @@ public:
         }
     }
 
+    int statusCode()
+    {
+        return statusCode_;
+    }
+
     void setStatusMessage(const string &message) { statusMessage_ = message; }
 
     void setStatusMessage(const char *start, const char *end)
     {
         statusMessage_ = std::string(start, end);
+    }
+
+    std::string statusMessage()
+    {
+        return statusMessage_;
     }
 
     void setVersion(const string &version) { version_ = version; }
@@ -117,6 +127,31 @@ public:
         std::swap(bodyMessageMap_, that.bodyMessageMap_);
     }
 
+    bool isError()
+    {
+        return statusCode_ >= HttpStatusCode::k500InternalServerError;
+    }
+
+    void setResponseSize(int sz)
+    {
+        responseSize_ = sz;
+    }
+
+    int responseSize()
+    {
+        return responseSize_;
+    }
+
+    void setErrorMsg(const string& msg)
+    {
+        serverErrorMsg_ = msg;
+    }
+
+    string errorMsg()
+    {
+        return serverErrorMsg_;
+    }
+
 private:
     std::unordered_map<string, string> headers_;
     HttpStatusCode statusCode_;
@@ -124,6 +159,8 @@ private:
     string statusMessage_;
     bool closeConnection_;
     string body_;
+    int responseSize_;
+    string serverErrorMsg_;
 
     /* HTTP Status to Message map */
     HttpStatusMessages statusMessageMap_;

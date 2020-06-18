@@ -39,7 +39,8 @@ std::string MimeType::getMime(const std::string &suffix) {
 
 HttpResponse::HttpResponse(bool close) : statusCode_(kUnknown),
                                          version_("HTTP/1.1"),
-                                         closeConnection_(close) {
+                                         closeConnection_(close),
+                                         responseSize_(0) {
     statusMessageMap_[kUnknown] = "Unknown";
     statusMessageMap_[k200Ok] = "OK";
     statusMessageMap_[k202NoContent] = "No Content";

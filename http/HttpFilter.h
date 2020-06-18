@@ -4,6 +4,7 @@
 #include "config/ServerConfig.h"
 #include "base/noncopyable.h"
 #include "net/TcpConnection.h"
+#include "base/FileLogging.h"
 
 using namespace cuber::config;
 
@@ -29,6 +30,21 @@ public:
     }
 
     virtual ~AbstractHttpFilter() = default;
+
+    void setNextFilter(AbstractHttpFilter *nextFilter)
+    {
+        nextFilter_.reset(nextFilter);
+    }
+
+    void appendFilter(AbstractHttpFilter *nextFilter)
+    {
+        auto filter = nextFilter_.get();
+        while (filter->nextFilter_.get())
+        {
+            filter = filter->nextFilter_.get();
+        }
+        filter->setNextFilter(nextFilter);
+    }
 
     virtual HttpFilterState
     filter(const ServerConfig *config, const TcpConnectionPtr &conn, const HttpRequest &request, HttpResponse &response) = 0;
@@ -85,6 +101,28 @@ public:
 
     HttpFilterState
     filter(const ServerConfig *config, const TcpConnectionPtr &conn, const HttpRequest &request, HttpResponse &response) override;
+};
+
+class HttpLoggingFilter : public AbstractHttpFilter {
+public:
+    explicit HttpLoggingFilter() = default;
+
+    explicit HttpLoggingFilter(HttpFilterPtr nextFilter)
+            : AbstractHttpFilter(nextFilter) {
+    }
+
+    HttpFilterState
+    filter(const ServerConfig *config, const TcpConnectionPtr &conn, const HttpRequest &request, HttpResponse &response) override;
+
+private:
+    static pthread_once_t accessPonce_;
+    static pthread_once_t errorPonce_;
+
+    static void getAccessLogger();
+    static void getErrorLogger();
+
+    static FileLoggerPtr HTTPAccessLogger;
+    static FileLoggerPtr HTTPErrorLogger;
 };
 
 }

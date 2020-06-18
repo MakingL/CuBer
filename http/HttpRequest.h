@@ -209,6 +209,21 @@ namespace cuber {
                 }
             }
 
+            std::string reqLineToString() const {
+                string requestLine;
+
+                /* request line */
+                char buf[64] = {0};
+                snprintf(buf, sizeof(buf), "%s ", methodString());
+                requestLine += buf;
+                requestLine += path_;
+                bzero(buf, sizeof(buf));
+                snprintf(buf, sizeof(buf), " %s", versionString());
+                requestLine += buf;
+
+                return requestLine;
+            }
+
         private:
         private:
             Method method_;
