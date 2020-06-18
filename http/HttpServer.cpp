@@ -46,7 +46,7 @@ HttpServer::HttpServer(EventLoop *loop,
     proxyHandler->setResponseCallback(std::bind(&HttpServer::proxyResponseCallback, this, _1, _2));
     httpHandler_->appendHandler(proxyHandler);
     httpHandler_->appendHandler(new HttpDefaultHandler);
-#ifdef PRESSURE_TEST
+#ifndef PRESSURE_TEST
     if (config_->mainConf().keepAliveTimeout > 0) {
         keepAliveTimer_.reset(new HttpTimer(loop, config_->mainConf().keepAliveTimeout));
     }
