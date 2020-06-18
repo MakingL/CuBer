@@ -14,6 +14,8 @@ namespace cuber
 
 class TimeZone;
 
+extern TimeZone g_logTimeZone;
+
 class Logger
 {
  public:

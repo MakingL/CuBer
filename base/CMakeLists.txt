@@ -8,7 +8,9 @@ set(base_SRCS
         FileUtil.cc
         LogFile.cc
         Logging.cc
+        FileLogging.cc
         LogStream.cc
+        ProcessInfo.cc
         Timestamp.cc
         Thread.cc
         ThreadPool.cc
