@@ -31,7 +31,12 @@ int main(int argc, char *argv[]) {
 
     ServerConfig serverConf(configPath);
     serverConf.loadConfig();
-    auto server_info = serverConf.serverConf(8080);
+    ServerMap serversConfMap = serverConf.serversConfMap();
+    if (serversConfMap.empty()) {
+        std::cout << "No server is configured. Please configure server domain.\n";
+        exit(EXIT_FAILURE);
+    }
+    auto server_info = serversConfMap.begin()->second;
 
     EventLoop loop;
     HttpServer server(&loop, InetAddress(server_info.listenPort), "CuBer", &serverConf);

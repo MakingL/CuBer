@@ -169,6 +169,10 @@ public:
         return servers_[port];
     }
 
+    ServerMap serversConfMap() {
+        return servers_;
+    }
+
     void addProxy(const ProxyServer &proxy)
     {
         proxies_[proxy.location] = proxy;
