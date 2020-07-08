@@ -36,11 +36,18 @@ int main(int argc, char *argv[]) {
         std::cout << "No server is configured. Please configure server domain.\n";
         exit(EXIT_FAILURE);
     }
-    auto server_info = serversConfMap.begin()->second;
 
     EventLoop loop;
-    HttpServer server(&loop, InetAddress(server_info.listenPort), "CuBer", &serverConf);
-    server.setThreadNum(server_info.workers);
-    server.start();
+    std::vector<HttpServerPtr> HttpServers;
+
+    for (const auto &serverInfo: serversConfMap) {
+        HttpServerPtr server = std::make_shared<HttpServer>(&loop, InetAddress(serverInfo.second.listenPort), "CuBer",
+                                                            &serverConf);
+        server->setThreadNum(serverInfo.second.workers);
+        server->start();
+
+        HttpServers.push_back(server);
+    }
+
     loop.loop();
 }

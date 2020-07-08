@@ -67,6 +67,9 @@ private:
     std::unique_ptr<AbstractHttpHandler> httpHandler_;
     std::unique_ptr<AbstractHttpFilter> httpFilter_;
 };
+
+typedef std::shared_ptr<cuber::net::HttpServer> HttpServerPtr;
+
 } // namespace net
 } // namespace cuber
 
