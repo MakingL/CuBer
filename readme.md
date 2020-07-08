@@ -2,7 +2,7 @@
 
 ## Description
 
-CuBer 是一个高并发的 HTTP 服务器，支持解析 HTTP get、put、post 请求，能够响应静态资源的请求，且支持反向代理，能够将动态内容请求转发到其他 web 服务器（如 uwsgi）。
+CuBer 是一个高并发的 HTTP 服务器，支持解析 HTTP get、head、post 请求，能够响应静态资源的请求，且支持反向代理，能够将动态内容请求转发到其他 web 服务器（如 uwsgi）。
 CuBer 由 C++11 编写，采用 Reactor 事件处理模式高效处理非阻塞 IO， 并使用多线程提高并发能力。
 
 ## Introduction
