@@ -92,10 +92,6 @@ void HttpServer::onConnection(const TcpConnectionPtr &conn) {
         LOG_DEBUG << "On client closed: " << conn->name();
         conn->forceClose();
 
-        if (keepAliveTimer_) {
-            auto *context = any_cast<HttpContext>(conn->getMutableContext());
-            keepAliveTimer_->removeHttpConnection(context->timerPos());
-        }
         numConnected_.decrement();
     }
 }
