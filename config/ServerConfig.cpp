@@ -95,10 +95,10 @@ void ServerConfig::loadConfig() {
     LOG_DEBUG << "\tkeepalive_timeout: " << main.keepAliveTimeout;
     LOG_DEBUG << "\tworker_connections: " << main.maxWorkerConnections;
 
-    node = yamlLoader.getNode(node, "log", true);
-    if (!(node == configRootNode)) {
+    YAML::Node logNode = yamlLoader.getNode(node, "log", false);
+    if (!(logNode == node)) {
         LOG_DEBUG << "log config: ";
-        for (auto loggerNode : node) {
+        for (auto loggerNode : logNode) {
             LoggerConfig loggerInfo;
             yamlLoader.getVal(loggerNode, "name", loggerInfo.loggerName);
             yamlLoader.getVal(loggerNode, "path", loggerInfo.logSavePath);
